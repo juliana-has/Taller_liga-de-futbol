@@ -57,6 +57,7 @@ void pausar() {
     std::cin.get();
 }
 
+// Rellena un string con espacios hasta el ancho indicado
 std::string ajustar(const std::string& texto, int ancho) {
     if ((int)texto.size() >= ancho) return texto.substr(0, ancho);
     return texto + std::string(ancho - texto.size(), ' ');
@@ -136,7 +137,7 @@ std::vector<Partido> leerPartidos(const std::string& ruta) {
     return partidos;
 }
 
-//  GUARDAR PARTIDO EN partidos.txt
+//  GUARDAR PARTIDO EN partidos.txt  
 
 bool guardarPartido(const std::string& ruta, const Partido& p) {
     std::ofstream archivo(ruta, std::ios::app);
@@ -150,7 +151,7 @@ bool guardarPartido(const std::string& ruta, const Partido& p) {
     return true;
 }
 
-//  GUARDAR JORNADA EN JORNADAS.txt
+//  GUARDAR JORNADA EN fechas.txt  
 
 bool guardarJornada(const std::string& ruta, int numJornada, const Partido& p) {
     std::ofstream archivo(ruta, std::ios::app);
@@ -166,8 +167,7 @@ bool guardarJornada(const std::string& ruta, int numJornada, const Partido& p) {
     return true;
 }
 
-//  FUNCION CON PUNTERO
-
+//  FUNCION CON PUNTEROS — actualiza estadisticas de un equipo
 void actualizarEstadisticas(Equipo* e, int golesFavor, int golesContra,
                              const ConfigLiga& config) {
     e->jugados++;
@@ -207,6 +207,7 @@ std::vector<Equipo> construirTabla(const std::vector<Partido>& partidos,
         }
     }
 
+    // Desempate multiple: puntos > diferencia de goles > goles a favor
     std::sort(tabla.begin(), tabla.end(), [](const Equipo& a, const Equipo& b) {
         if (a.puntos     != b.puntos)     return a.puntos     > b.puntos;
         if (a.diferencia != b.diferencia) return a.diferencia > b.diferencia;
@@ -216,61 +217,207 @@ std::vector<Equipo> construirTabla(const std::vector<Partido>& partidos,
     return tabla;
 }
 
-//  MOSTRAR TABLA
+//  MOSTRAR TABLA EN CONSOLA 
 
 void mostrarTabla(const std::vector<Equipo>& tabla) {
     std::cout << "\n";
     std::cout << ajustar("#",  3)
               << ajustar("Equipo", 22)
-              << ajustar("PJ", 5) << ajustar("PG", 5)
-              << ajustar("PE", 5) << ajustar("PP", 5)
-              << ajustar("GF", 5) << ajustar("GC", 5)
-              << ajustar("DG", 6) << ajustar("PTS", 5) << "\n";
+              << ajustar("PJ", 5)
+              << ajustar("PG", 5)
+              << ajustar("PE", 5)
+              << ajustar("PP", 5)
+              << ajustar("GF", 5)
+              << ajustar("GC", 5)
+              << ajustar("DG", 6)
+              << ajustar("PTS", 5)
+              << "\n";
     std::cout << std::string(66, '-') << "\n";
 
     for (int i = 0; i < (int)tabla.size(); i++) {
         const Equipo& e = tabla[i];
         std::string dg = (e.diferencia >= 0 ? "+" : "") + std::to_string(e.diferencia);
-        std::cout << ajustar(i + 1, 3)   << ajustar(e.nombre, 22)
-                  << ajustar(e.jugados, 5)   << ajustar(e.ganados, 5)
-                  << ajustar(e.empatados, 5) << ajustar(e.perdidos, 5)
-                  << ajustar(e.golesFavor, 5) << ajustar(e.golesContra, 5)
-                  << ajustar(dg, 6) << ajustar(e.puntos, 5) << "\n";
+        std::cout << ajustar(i + 1,      3)
+                  << ajustar(e.nombre,  22)
+                  << ajustar(e.jugados,  5)
+                  << ajustar(e.ganados,  5)
+                  << ajustar(e.empatados,5)
+                  << ajustar(e.perdidos, 5)
+                  << ajustar(e.golesFavor,  5)
+                  << ajustar(e.golesContra, 5)
+                  << ajustar(dg,         6)
+                  << ajustar(e.puntos,   5)
+                  << "\n";
     }
     std::cout << "\n";
 }
 
-//  VER TABLA
+//  DETECCION DE PARTIDO DUPLICADO  
 
-void verTablaPosiciones(const ConfigLiga& config) {
+bool esPartidoDuplicado(const std::vector<Partido>& partidos,
+                         const std::string& local, const std::string& visitante,
+                         const std::string& fecha) {
+    for (const Partido& p : partidos) {
+        if (p.fecha == fecha &&
+            ((p.local == local && p.visitante == visitante) ||
+             (p.local == visitante && p.visitante == local))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+//  HISTORIAL DE ENFRENTAMIENTOS  
+void verHistorialEnfrentamientos(const ConfigLiga& config) {
+    std::cout << "\n--- Historial de enfrentamientos ---\n\n";
+    std::cout << "Equipos disponibles:\n";
+    for (int i = 0; i < (int)config.equipos.size(); i++) {
+        std::cout << "  " << (i + 1) << ". " << config.equipos[i] << "\n";
+    }
+
+    int idx1 = 0, idx2 = 0;
+    std::cout << "\nSelecciona el primer equipo (numero): ";
+    std::cin >> idx1; idx1--;
+    std::cout << "Selecciona el segundo equipo (numero): ";
+    std::cin >> idx2; idx2--;
+    std::cin.ignore(1000, '\n');
+
+    if (idx1 < 0 || idx1 >= (int)config.equipos.size() ||
+        idx2 < 0 || idx2 >= (int)config.equipos.size()) {
+        std::cout << "Numero de equipo invalido.\n";
+        pausar(); return;
+    }
+    if (idx1 == idx2) {
+        std::cout << "Debes elegir dos equipos distintos.\n";
+        pausar(); return;
+    }
+
+    std::string eq1 = config.equipos[idx1];
+    std::string eq2 = config.equipos[idx2];
     std::vector<Partido> partidos = leerPartidos("data/partidos.txt");
-    std::vector<Equipo> tabla = construirTabla(partidos, config);
-    mostrarTabla(tabla);
+
+    std::cout << "\nEnfrentamientos entre " << eq1 << " y " << eq2 << ":\n";
+    std::cout << std::string(50, '-') << "\n";
+
+    int encontrados = 0, ganados1 = 0, ganados2 = 0, empates = 0;
+
+    for (const Partido& p : partidos) {
+        bool eq1esLocal = (p.local == eq1 && p.visitante == eq2);
+        bool eq2esLocal = (p.local == eq2 && p.visitante == eq1);
+
+        if (eq1esLocal || eq2esLocal) {
+            encontrados++;
+            std::cout << p.fecha << "  "
+                      << p.local << " " << p.golesLocal
+                      << " - " << p.golesVisitante << " "
+                      << p.visitante << "\n";
+
+            if (p.golesLocal > p.golesVisitante) {
+                if (eq1esLocal) ganados1++; else ganados2++;
+            } else if (p.golesLocal < p.golesVisitante) {
+                if (eq1esLocal) ganados2++; else ganados1++;
+            } else {
+                empates++;
+            }
+        }
+    }
+
+    if (encontrados == 0) {
+        std::cout << "No hay enfrentamientos registrados entre estos equipos.\n";
+    } else {
+        std::cout << std::string(50, '-') << "\n";
+        std::cout << "Total: " << encontrados << " partido(s)\n";
+        std::cout << eq1 << ": " << ganados1 << " victoria(s)\n";
+        std::cout << eq2 << ": " << ganados2 << " victoria(s)\n";
+        std::cout << "Empates: " << empates << "\n";
+    }
+    pausar();
+}
+
+//  EDICION DE RESULTADO  
+
+void editarResultado(const ConfigLiga& config) {
+    std::cout << "\n--- Editar resultado de un partido ---\n\n";
+    std::vector<Partido> partidos = leerPartidos("data/partidos.txt");
+
+    if (partidos.empty()) {
+        std::cout << "No hay partidos registrados para editar.\n";
+        pausar(); return;
+    }
+
+    for (int i = 0; i < (int)partidos.size(); i++) {
+        const Partido& p = partidos[i];
+        std::cout << "  " << (i + 1) << ". "
+                  << p.fecha << "  "
+                  << p.local << " " << p.golesLocal
+                  << " - " << p.golesVisitante << " "
+                  << p.visitante << "\n";
+    }
+
+    int idx = 0;
+    std::cout << "\nSelecciona el numero del partido a editar: ";
+    std::cin >> idx; idx--;
+
+    if (idx < 0 || idx >= (int)partidos.size()) {
+        std::cout << "Numero invalido.\n";
+        pausar(); return;
+    }
+
+    std::cout << "Nuevo marcador para: "
+              << partidos[idx].local << " vs " << partidos[idx].visitante << "\n";
+    std::cout << "Goles " << partidos[idx].local << ": ";
+    std::cin >> partidos[idx].golesLocal;
+    std::cout << "Goles " << partidos[idx].visitante << ": ";
+    std::cin >> partidos[idx].golesVisitante;
+    std::cin.ignore(1000, '\n');
+
+    if (partidos[idx].golesLocal < 0 || partidos[idx].golesVisitante < 0) {
+        std::cout << "Error: los goles no pueden ser negativos.\n";
+        pausar(); return;
+    }
+
+    std::ofstream archivo("data/partidos.txt");
+    if (!archivo.is_open()) {
+        std::cerr << "Error: no se pudo reescribir partidos.txt\n";
+        pausar(); return;
+    }
+    for (const Partido& p : partidos) {
+        archivo << p.fecha << "|" << p.local << "|" << p.visitante << "|"
+                << p.golesLocal << "|" << p.golesVisitante << "\n";
+    }
+    archivo.close();
+
+    std::cout << "\nResultado actualizado correctamente!\n";
+    std::cout << partidos[idx].local << " " << partidos[idx].golesLocal
+              << " - " << partidos[idx].golesVisitante << " "
+              << partidos[idx].visitante << "\n";
     pausar();
 }
 
 //  REGISTRAR PARTIDO
-
 void registrarPartido(const ConfigLiga& config) {
     std::cout << "\n--- Registrar resultado de un partido ---\n\n";
 
     std::cout << "Equipos disponibles:\n";
-    for (int i = 0; i < (int)config.equipos.size(); i++)
+    for (int i = 0; i < (int)config.equipos.size(); i++) {
         std::cout << "  " << (i + 1) << ". " << config.equipos[i] << "\n";
+    }
 
     int idxLocal = 0, idxVisitante = 0;
     std::cout << "\nSelecciona el equipo LOCAL (numero): ";
     std::cin >> idxLocal; idxLocal--;
 
     if (idxLocal < 0 || idxLocal >= (int)config.equipos.size()) {
-        std::cout << "Numero de equipo invalido.\n"; pausar(); return;
+        std::cout << "Numero de equipo invalido.\n";
+        pausar(); return;
     }
 
     std::cout << "Selecciona el equipo VISITANTE (numero): ";
     std::cin >> idxVisitante; idxVisitante--;
 
     if (idxVisitante < 0 || idxVisitante >= (int)config.equipos.size()) {
-        std::cout << "Numero de equipo invalido.\n"; pausar(); return;
+        std::cout << "Numero de equipo invalido.\n";
+        pausar(); return;
     }
 
     if (idxLocal == idxVisitante) {
@@ -285,7 +432,8 @@ void registrarPartido(const ConfigLiga& config) {
     std::cin >> golesVisitante;
 
     if (golesLocal < 0 || golesVisitante < 0) {
-        std::cout << "Error: los goles no pueden ser negativos.\n"; pausar(); return;
+        std::cout << "Error: los goles no pueden ser negativos.\n";
+        pausar(); return;
     }
 
     std::string fecha;
@@ -294,12 +442,23 @@ void registrarPartido(const ConfigLiga& config) {
     std::getline(std::cin, fecha);
     fecha = trim(fecha);
 
-    Partido p;
-    p.fecha = fecha; p.local = config.equipos[idxLocal];
-    p.visitante = config.equipos[idxVisitante];
-    p.golesLocal = golesLocal; p.golesVisitante = golesVisitante;
-
     std::vector<Partido> anteriores = leerPartidos("data/partidos.txt");
+
+    // detectar partido duplicado
+    if (esPartidoDuplicado(anteriores, config.equipos[idxLocal],
+                           config.equipos[idxVisitante], fecha)) {
+        std::cout << "\nAdvertencia: este enfrentamiento ya fue registrado en la misma fecha.\n";
+        std::cout << "No se puede registrar un partido duplicado.\n";
+        pausar(); return;
+    }
+
+    Partido p;
+    p.fecha          = fecha;
+    p.local          = config.equipos[idxLocal];
+    p.visitante      = config.equipos[idxVisitante];
+    p.golesLocal     = golesLocal;
+    p.golesVisitante = golesVisitante;
+
     int numJornada = (int)anteriores.size() + 1;
 
     bool okPartido = guardarPartido("data/partidos.txt", p);
@@ -315,8 +474,16 @@ void registrarPartido(const ConfigLiga& config) {
     pausar();
 }
 
-//  VER HISTORIAL DE JORNADAS
+//  VER TABLA DE POSICIONES  
 
+void verTablaPosiciones(const ConfigLiga& config) {
+    std::vector<Partido> partidos = leerPartidos("data/partidos.txt");
+    std::vector<Equipo> tabla = construirTabla(partidos, config);
+    mostrarTabla(tabla);
+    pausar();
+}
+
+//  VER HISTORIAL DE JORNADAS
 void verHistorialJornadas() {
     std::cout << "\n--- Historial de jornadas ---\n\n";
     std::ifstream archivo("data/fechas.txt");
@@ -338,11 +505,14 @@ void verHistorialJornadas() {
         } else {
             std::stringstream ss(linea);
             std::string fecha, local, visitante, gl, gv;
-            std::getline(ss, fecha, '|'); std::getline(ss, local, '|');
+            std::getline(ss, fecha,     '|');
+            std::getline(ss, local,     '|');
             std::getline(ss, visitante, '|');
-            std::getline(ss, gl, '|'); std::getline(ss, gv, '|');
+            std::getline(ss, gl,        '|');
+            std::getline(ss, gv,        '|');
             std::cout << "  " << fecha << "  "
-                      << local << " " << gl << " - " << gv << " " << visitante << "\n";
+                      << local << " " << gl
+                      << " - " << gv << " " << visitante << "\n";
         }
     }
     archivo.close();
@@ -350,7 +520,6 @@ void verHistorialJornadas() {
 }
 
 //  VER TODOS LOS PARTIDOS
-
 void verTodosLosPartidos() {
     std::cout << "\n--- Todos los partidos jugados ---\n\n";
     std::vector<Partido> partidos = leerPartidos("data/partidos.txt");
@@ -362,29 +531,16 @@ void verTodosLosPartidos() {
 
     for (int i = 0; i < (int)partidos.size(); i++) {
         const Partido& p = partidos[i];
-        std::cout << (i + 1) << ". " << p.fecha << "  "
+        std::cout << (i + 1) << ". "
+                  << p.fecha << "  "
                   << p.local << " " << p.golesLocal
-                  << " - " << p.golesVisitante << " " << p.visitante << "\n";
+                  << " - " << p.golesVisitante << " "
+                  << p.visitante << "\n";
     }
     pausar();
 }
 
-//  ESPACIOS
-
-void verHistorialEnfrentamientos(const ConfigLiga& config) {
-    std::cout << "\n--- Historial de enfrentamientos ---\n";
-    std::cout << "(Proximamente...)\n";
-    pausar();
-}
-
-void editarResultado(const ConfigLiga& config) {
-    std::cout << "\n--- Editar resultado ---\n";
-    std::cout << "(Proximamente...)\n";
-    pausar();
-}
-
 //  MENU PRINCIPAL
-
 int mostrarMenu(const std::string& nombreLiga) {
     int opcion = 0;
     std::cout << "\n";
@@ -408,17 +564,17 @@ int mostrarMenu(const std::string& nombreLiga) {
         std::cout << "  Opcion invalida. Intenta de nuevo.\n";
         return 0;
     }
+    
     std::cin.ignore(1000, '\n');
     return opcion;
 }
 
 //  MAIN
-
 int main() {
     ConfigLiga config;
 
     if (!leerConfig("data/config.txt", config)) {
-        std::cerr << "El programa no puede continuar sin una configuracion valida.\n";
+        std::cerr << "ALGO HICISTE MAL, EL PROGRAMA NO PUEDE SEGUIR.\n";
         return 1;
     }
 
