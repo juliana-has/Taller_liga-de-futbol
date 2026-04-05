@@ -99,16 +99,140 @@ bool leerConfig(const std::string& ruta, ConfigLiga& config) {
     return true;
 }
 
-//  FUNCIONES
+//  LECTURA DE partidos.txt
 
-void verTablaPosiciones(const ConfigLiga& config) {
-    std::cout << "\n--- Tabla de posiciones ---\n";
-    std::cout << "(Proximamente...)\n";
+std::vector<Partido> leerPartidos(const std::string& ruta) {
+    std::vector<Partido> partidos;
+    std::ifstream archivo(ruta);
+    if (!archivo.is_open()) return partidos;
+
+    std::string linea;
+    while (std::getline(archivo, linea)) {
+        linea = trim(linea);
+        if (linea.empty()) continue;
+
+        std::stringstream ss(linea);
+        std::string campo;
+        Partido p;
+
+        std::getline(ss, p.fecha,     '|');
+        std::getline(ss, p.local,     '|');
+        std::getline(ss, p.visitante, '|');
+        std::getline(ss, campo, '|'); p.golesLocal     = std::stoi(campo);
+        std::getline(ss, campo, '|'); p.golesVisitante = std::stoi(campo);
+
+        partidos.push_back(p);
+    }
+    archivo.close();
+    return partidos;
+}
+
+//  GUARDAR PARTIDO EN partidos.txt
+
+bool guardarPartido(const std::string& ruta, const Partido& p) {
+    std::ofstream archivo(ruta, std::ios::app);
+    if (!archivo.is_open()) {
+        std::cerr << "Error: no se pudo escribir en " << ruta << "\n";
+        return false;
+    }
+    archivo << p.fecha << "|" << p.local << "|" << p.visitante << "|"
+            << p.golesLocal << "|" << p.golesVisitante << "\n";
+    archivo.close();
+    return true;
+}
+
+//  GUARDAR JORNADA EN fechas.txt
+
+bool guardarJornada(const std::string& ruta, int numJornada, const Partido& p) {
+    std::ofstream archivo(ruta, std::ios::app);
+    if (!archivo.is_open()) {
+        std::cerr << "Error: no se pudo escribir en " << ruta << "\n";
+        return false;
+    }
+    archivo << "JORNADA=" << numJornada << "\n";
+    archivo << p.fecha << "|" << p.local << "|" << p.visitante << "|"
+            << p.golesLocal << "|" << p.golesVisitante << "\n";
+    archivo << "FIN_JORNADA\n";
+    archivo.close();
+    return true;
+}
+
+//  REGISTRAR PARTIDO
+
+void registrarPartido(const ConfigLiga& config) {
+    std::cout << "\n--- Registrar resultado de un partido ---\n\n";
+
+    std::cout << "Equipos disponibles:\n";
+    for (int i = 0; i < (int)config.equipos.size(); i++) {
+        std::cout << "  " << (i + 1) << ". " << config.equipos[i] << "\n";
+    }
+
+    int idxLocal = 0, idxVisitante = 0;
+    std::cout << "\nSelecciona el equipo LOCAL (numero): ";
+    std::cin >> idxLocal; idxLocal--;
+
+    if (idxLocal < 0 || idxLocal >= (int)config.equipos.size()) {
+        std::cout << "Numero de equipo invalido.\n";
+        pausar(); return;
+    }
+
+    std::cout << "Selecciona el equipo VISITANTE (numero): ";
+    std::cin >> idxVisitante; idxVisitante--;
+
+    if (idxVisitante < 0 || idxVisitante >= (int)config.equipos.size()) {
+        std::cout << "Numero de equipo invalido.\n";
+        pausar(); return;
+    }
+
+    if (idxLocal == idxVisitante) {
+        std::cout << "Error: el equipo local y visitante no pueden ser el mismo.\n";
+        pausar(); return;
+    }
+
+    int golesLocal = 0, golesVisitante = 0;
+    std::cout << "Goles del equipo local (" << config.equipos[idxLocal] << "): ";
+    std::cin >> golesLocal;
+    std::cout << "Goles del equipo visitante (" << config.equipos[idxVisitante] << "): ";
+    std::cin >> golesVisitante;
+
+    if (golesLocal < 0 || golesVisitante < 0) {
+        std::cout << "Error: los goles no pueden ser negativos.\n";
+        pausar(); return;
+    }
+
+    std::string fecha;
+    std::cout << "Fecha del partido (ej: 2025-04-05): ";
+    std::cin.ignore();
+    std::getline(std::cin, fecha);
+    fecha = trim(fecha);
+
+    Partido p;
+    p.fecha          = fecha;
+    p.local          = config.equipos[idxLocal];
+    p.visitante      = config.equipos[idxVisitante];
+    p.golesLocal     = golesLocal;
+    p.golesVisitante = golesVisitante;
+
+    std::vector<Partido> anteriores = leerPartidos("data/partidos.txt");
+    int numJornada = (int)anteriores.size() + 1;
+
+    bool okPartido = guardarPartido("data/partidos.txt", p);
+    bool okJornada = guardarJornada("data/fechas.txt", numJornada, p);
+
+    if (okPartido && okJornada) {
+        std::cout << "\nPartido registrado correctamente!\n";
+        std::cout << p.local << " " << p.golesLocal
+                  << " - " << p.golesVisitante << " " << p.visitante << "\n";
+    } else {
+        std::cout << "Hubo un error al guardar el partido.\n";
+    }
     pausar();
 }
 
-void registrarPartido(const ConfigLiga& config) {
-    std::cout << "\n--- Registrar partido ---\n";
+//  espacios
+
+void verTablaPosiciones(const ConfigLiga& config) {
+    std::cout << "\n--- Tabla de posiciones ---\n";
     std::cout << "(Proximamente...)\n";
     pausar();
 }
