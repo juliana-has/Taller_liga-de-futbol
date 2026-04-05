@@ -57,6 +57,15 @@ void pausar() {
     std::cin.get();
 }
 
+std::string ajustar(const std::string& texto, int ancho) {
+    if ((int)texto.size() >= ancho) return texto.substr(0, ancho);
+    return texto + std::string(ancho - texto.size(), ' ');
+}
+
+std::string ajustar(int numero, int ancho) {
+    return ajustar(std::to_string(numero), ancho);
+}
+
 //  LECTURA DE config.txt
 
 bool leerConfig(const std::string& ruta, ConfigLiga& config) {
@@ -141,7 +150,7 @@ bool guardarPartido(const std::string& ruta, const Partido& p) {
     return true;
 }
 
-//  GUARDAR JORNADA EN fechas.txt
+//  GUARDAR JORNADA EN jornads.txt
 
 bool guardarJornada(const std::string& ruta, int numJornada, const Partido& p) {
     std::ofstream archivo(ruta, std::ios::app);
@@ -155,6 +164,100 @@ bool guardarJornada(const std::string& ruta, int numJornada, const Partido& p) {
     archivo << "FIN_JORNADA\n";
     archivo.close();
     return true;
+}
+
+//  FUNCION CON PUNTEROS — actualiza estadisticas de un equipo
+
+void actualizarEstadisticas(Equipo* e, int golesFavor, int golesContra,
+                             const ConfigLiga& config) {
+    e->jugados++;
+    e->golesFavor  += golesFavor;
+    e->golesContra += golesContra;
+    e->diferencia   = e->golesFavor - e->golesContra;
+
+    if (golesFavor > golesContra) {
+        e->ganados++;
+        e->puntos += config.puntosPorVictoria;
+    } else if (golesFavor == golesContra) {
+        e->empatados++;
+        e->puntos += config.puntosPorEmpate;
+    } else {
+        e->perdidos++;
+        e->puntos += config.puntosPorDerrota;
+    }
+}
+
+//  CONSTRUIR TABLA
+
+std::vector<Equipo> construirTabla(const std::vector<Partido>& partidos,
+                                    const ConfigLiga& config) {
+    std::vector<Equipo> tabla;
+    for (const std::string& nombre : config.equipos) {
+        Equipo e;
+        e.nombre = nombre;
+        tabla.push_back(e);
+    }
+
+    for (const Partido& p : partidos) {
+        for (int i = 0; i < (int)tabla.size(); i++) {
+            if (tabla[i].nombre == p.local)
+                actualizarEstadisticas(&tabla[i], p.golesLocal, p.golesVisitante, config);
+            if (tabla[i].nombre == p.visitante)
+                actualizarEstadisticas(&tabla[i], p.golesVisitante, p.golesLocal, config);
+        }
+    }
+
+    std::sort(tabla.begin(), tabla.end(), [](const Equipo& a, const Equipo& b) {
+        if (a.puntos     != b.puntos)     return a.puntos     > b.puntos;
+        if (a.diferencia != b.diferencia) return a.diferencia > b.diferencia;
+        return a.golesFavor > b.golesFavor;
+    });
+
+    return tabla;
+}
+
+//  MOSTRAR TABLA EN CONSOLA
+
+void mostrarTabla(const std::vector<Equipo>& tabla) {
+    std::cout << "\n";
+    std::cout << ajustar("#",  3)
+              << ajustar("Equipo", 22)
+              << ajustar("PJ", 5)
+              << ajustar("PG", 5)
+              << ajustar("PE", 5)
+              << ajustar("PP", 5)
+              << ajustar("GF", 5)
+              << ajustar("GC", 5)
+              << ajustar("DG", 6)
+              << ajustar("PTS", 5)
+              << "\n";
+    std::cout << std::string(66, '-') << "\n";
+
+    for (int i = 0; i < (int)tabla.size(); i++) {
+        const Equipo& e = tabla[i];
+        std::string dg = (e.diferencia >= 0 ? "+" : "") + std::to_string(e.diferencia);
+        std::cout << ajustar(i + 1,          3)
+                  << ajustar(e.nombre,       22)
+                  << ajustar(e.jugados,       5)
+                  << ajustar(e.ganados,       5)
+                  << ajustar(e.empatados,     5)
+                  << ajustar(e.perdidos,      5)
+                  << ajustar(e.golesFavor,    5)
+                  << ajustar(e.golesContra,   5)
+                  << ajustar(dg,              6)
+                  << ajustar(e.puntos,        5)
+                  << "\n";
+    }
+    std::cout << "\n";
+}
+
+//  VER TABLA DE POSICIONES
+
+void verTablaPosiciones(const ConfigLiga& config) {
+    std::vector<Partido> partidos = leerPartidos("data/partidos.txt");
+    std::vector<Equipo> tabla = construirTabla(partidos, config);
+    mostrarTabla(tabla);
+    pausar();
 }
 
 //  REGISTRAR PARTIDO
@@ -229,13 +332,7 @@ void registrarPartido(const ConfigLiga& config) {
     pausar();
 }
 
-//  espacios
-
-void verTablaPosiciones(const ConfigLiga& config) {
-    std::cout << "\n--- Tabla de posiciones ---\n";
-    std::cout << "(Proximamente...)\n";
-    pausar();
-}
+//  ESPACIOS
 
 void verHistorialJornadas() {
     std::cout << "\n--- Historial de jornadas ---\n";
