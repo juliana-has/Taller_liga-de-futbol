@@ -1,0 +1,15 @@
+JORNADA=1
+2026-04-01|Real Inquietud|Independiente esquizo|3|1
+FIN_JORNADA
+JORNADA=2
+2026-04-01|Atletico de la miseria|Reprobados FC|0|0
+FIN_JORNADA
+JORNADA=3
+2026-04-02|Falta Terapia|Era gol de Yepes|2|4
+FIN_JORNADA
+JORNADA=4
+2026-04-03|Real Inquietud|Reprobados FC|1|1
+FIN_JORNADA
+JORNADA=5
+2026-04-03|Independiente esquizo|Atletico de la miseria|2|0
+FIN_JORNADA
