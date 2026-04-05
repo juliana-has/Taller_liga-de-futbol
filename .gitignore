@@ -1,0 +1,14 @@
+# Ejecutables
+*.exe
+*.out
+a.out
+
+# Carpetas de compilacion
+build/
+bin/
+.vscode/
+.idea/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
