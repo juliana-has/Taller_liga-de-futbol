@@ -1,0 +1,17 @@
+# Configuracion de la liga
+# Formato: clave=valor  
+
+liga=Liga de la lokura
+
+# Puntos por resultado
+puntos_victoria=3
+puntos_empate=1
+puntos_derrota=0
+
+# Lista de equipos 
+equipo=Real Inquietud
+equipo=Independiente esquizo  
+equipo=Atletico de la miseria 
+equipo=Reprobados FC
+equipo=Falta Terapia
+equipo=Era gol de Yepes
