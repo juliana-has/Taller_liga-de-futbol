@@ -1,0 +1,3 @@
+JORNADA=1
+2026-05-08|Falta Terapia|Atletico de la miseria|8|10
+FIN_JORNADA
