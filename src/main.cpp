@@ -57,7 +57,8 @@ void pausar() {
     std::cin.get();
 }
 
-// Rellena un string con espacios hasta el ancho indicado
+// Rellena string con espacios 
+
 std::string ajustar(const std::string& texto, int ancho) {
     if ((int)texto.size() >= ancho) return texto.substr(0, ancho);
     return texto + std::string(ancho - texto.size(), ' ');
@@ -337,8 +338,8 @@ void verHistorialEnfrentamientos(const ConfigLiga& config) {
 //  EDICION DE RESULTADO  
 
 void editarResultado(const ConfigLiga& config) {
-    std::cout << "\n--- Editar resultado de un partido ---\n\n";
-    std::vector<Partido> partidos = leerPartidos("data/partidos.txt");
+    std::cout << "\nsultado de un partido ---\n\n";
+    std::vector<Partido> part--- Editar reidos = leerPartidos("data/partidos.txt");
 
     if (partidos.empty()) {
         std::cout << "No hay partidos registrados para editar.\n";
