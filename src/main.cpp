@@ -207,7 +207,7 @@ std::vector<Equipo> construirTabla(const std::vector<Partido>& partidos,
         }
     }
 
-    // Desempate multiple: puntos > diferencia de goles > goles a favor
+    // Desempate multiple
     std::sort(tabla.begin(), tabla.end(), [](const Equipo& a, const Equipo& b) {
         if (a.puntos     != b.puntos)     return a.puntos     > b.puntos;
         if (a.diferencia != b.diferencia) return a.diferencia > b.diferencia;
@@ -569,7 +569,6 @@ int mostrarMenu(const std::string& nombreLiga) {
     return opcion;
 }
 
-//  MAIN
 int main() {
     ConfigLiga config;
 
