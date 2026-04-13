@@ -17,7 +17,7 @@ Ademas desempata por diferencia de goles y verifica que nada este duplicado
 
 ## Como compilar
 
-se pega la direccion en power shell de donde este ubicado tu achivo cpp, siempre agregar cd antes de o sino no sirve ;( 
+se pega la direccion en power shell de donde este ubicado tu archivo cpp, siempre agregar cd antes de o sino no sirve ;( 
 luego se agrega lo siguiente:
 g++ -o liga src/main.cpp
 donde dice liga es el nombre del archivo que le vas a dar a tu ejecutable :)
