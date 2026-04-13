@@ -1,9 +1,5 @@
-# Liga de Futbol
-
+# Liga de la Lokura
 **Estudiante:** Juliana Mendez  
-**Lenguaje:** C++  
-**Curso:** Ciencias de la computacion e IA
-
 ---
 
 ## Descripcion
@@ -16,20 +12,17 @@ por diferencia de goles
 
 ## Como compilar
 
-se pega la direccion en power shell siempre agregar cd antes de o sino no sirve ;( 
+se pega la direccion en power shell de donde este ubicado tu achivo cpp, siempre agregar cd antes de o sino no sirve ;( 
 luego se agrega lo siguiente:
 g++ -o liga src/main.cpp
-donde dice liga es el nombre del archivo que le vas a dar a tu ejecutable :) 
-```
+donde dice liga es el nombre del archivo que le vas a dar a tu ejecutable :)
+
 
 ## Como ejecutar
 
-entrar a power shell si esta en wiondows tomar la carpeta done esta el ejecutable y la configuracion
-se ejecuta segun el nombre yo le puse nombre de liga y se ejecuta con .exe
-.\liga.exe
-```
+entrar a power shell si estas en wiondows tomar la carpeta donde esta el ejecutable y la configuracion(el config.txt que 
+hiciste para la liga) se ejecuta segun el nombre, yo le puse nombre de liga y se ejecuta con .exe osea: .\liga.exe
 
----
 y pues si estas en visual studio el tambien compila y ejecuta solito (si te da pereza como a mi hacer todo eso en power shel)
 
 ## Formato de config.txt
@@ -105,4 +98,5 @@ enfrentamiento dos veces en la misma fecha.
 **Desempate multiple:** La tabla ordena por puntos, luego por diferencia
 de goles y finalmente por goles a favor.
 
-se me muerieron todas las neuronas haciendo esto :,,,
+Fin.
+P.D: se me muerieron todas las neuronas haciendo esto :,,,
