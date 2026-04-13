@@ -590,7 +590,7 @@ int main() {
             case 4: verHistorialEnfrentamientos(config); break;
             case 5: editarResultado(config);             break;
             case 6: verTablaPosiciones(config);          break;
-            case 7: std::cout << "\nHasta luego!\n";    break;
+            case 7: std::cout << "\nADIU,BABAI!\n";    break;
             default: break;
         }
     } while (opcion != 7);
