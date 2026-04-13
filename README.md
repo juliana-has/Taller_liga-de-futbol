@@ -4,9 +4,14 @@
 
 ## Descripcion
 
-Aplicacion de consola en C++ que gestiona una liga de futbol inventada donde se pueden registrar 
-partidos, fechas y goles. El programa es capaz de mostrar en pantalla una tabla, realiza desempate 
-por diferencia de goles 
+Aplicacion en c++ que:
+Gestiona una liga imaginario de futbol donde: 
+Guarda equipos 
+Guarda partidos 
+Calcula quién va ganando 
+Te deja ver el historial 
+Tabla de posiciones
+Ademas desempata por diferencia de goles y verifica que nada este duplicado
 
 ---
 
